@@ -20,6 +20,14 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     - name: run tests
       run: ls -ltr
+    - name: Get repository name
+      uses: winterjung/split@v2
+      id: split
+      with:
+        msg: ${{ github.repository }}
+        separator: /
+    - name: Display repo name
+      run: echo "Repo name: ${{ steps.split.outputs._2 }}"
     - name: Get current date and time format
       id: date
       run: echo "::set-output name=date::$(date +'%Y%m%d%H%M%S')"
@@ -29,11 +37,11 @@ jobs:
     #   id: version
     #   if: ${{ github.event.ref == 'refs/heads/main' || github.event.ref == 'refs/heads/develop' }}        
     #   run: |
-    #     if [[ ${{ github.event.ref_name }} == 'main' ]]; then
+    #     if [[ ${{ github.ref_name }} == 'main' ]]; then
     #       echo "It is main branch. hence, we will create the release tag"
     #       version="1.0.0"
     #       echo "::set-output name=version::$version"
-    #     elif [[ ${{ github.event.ref_name }} == 'develop' ]]; then
+    #     elif [[ ${{ github.ref_name }} == 'develop' ]]; then
     #        echo "It is develop branch. hence, we will create a snapshot tag"
     #        version="1.0.0.SNAPSHOT-${{ steps.date.outputs.date }}"
     #        echo "::set-output name=version::$version"
