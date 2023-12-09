@@ -54,4 +54,4 @@ jobs:
       uses: docker/build-push-action@v5
       with:
         push: true
-        tags: ${{ steps.split.outputs._1 }}:${{ steps.version.outputs.version }}
+        tags: ${{ github.repository }}:${{ steps.version.outputs.version }}
