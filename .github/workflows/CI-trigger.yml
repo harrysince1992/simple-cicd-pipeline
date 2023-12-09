@@ -50,6 +50,8 @@ jobs:
     - name: Display calculated version
       run: echo "Calculated version is ${{ steps.version.outputs.version }}"
 
+    - run: echo "${{ github.repository }}:${{ steps.version.outputs.version }}"
+
     - name: Push Docker Image to Docker Hub
       uses: docker/build-push-action@v5
       with:
