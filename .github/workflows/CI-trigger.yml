@@ -62,7 +62,7 @@ jobs:
       - name: call deploy workflow
         uses: peter-evans/repository-dispatch@v2
         with:
-          token: ${{ secrets.GITHUB_AUTH_TOKEN }}
+          token: ${{ secrets.PAT }}
           repository: ${{ github.repository }}
           event-type: deploy
           client-payload: '{"env": "${{ steps.version.outputs.env }}", "version": "${{ steps.version.outputs.version }}"}'
