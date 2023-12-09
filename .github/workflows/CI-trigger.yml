@@ -8,6 +8,10 @@ jobs:
     name: Build simple node webapp
     runs-on: ubuntu-latest
     steps:
+    - name: Dump GitHub context
+      env:
+        GITHUB_CONTEXT: ${{ toJSON(github) }}
+        run: echo "$GITHUB_CONTEXT"
     - uses: actions/checkout@v4
     - name: Login to DockerHub
       uses: docker/login-action@v3
@@ -36,8 +40,7 @@ jobs:
     #     fi
     # - name: Display calculated version
     #   run: echo "Calculated version is ${{ steps.version.outputs.version }}"
-    - name: display github context
-      run: echo ${{ github.event }}
+
     # - name: Push Docker Image to Docker Hub
     #   uses: docker/build-push-action@v5
     #   with:
