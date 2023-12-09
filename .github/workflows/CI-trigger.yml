@@ -8,52 +8,61 @@ jobs:
     name: Build simple node webapp
     runs-on: ubuntu-latest
     steps:
-    - name: Get repository name
-      uses: winterjung/split@v2
-      id: split
-      with:
-        msg: ${{ github.repository }}
-        separator: /
-        
-    - name: Display repo name
-      run: echo ${{ steps.split.outputs._1 }}
-      
-    - uses: actions/checkout@v4
-    
-    - name: Login to DockerHub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Get repository name
+        uses: winterjung/split@v2
+        id: split
+        with:
+          msg: ${{ github.repository }}
+          separator: /
 
-    - name: Get current date and time format
-      id: date
-      run: echo "::set-output name=date::$(date +'%Y%m%d%H%M%S')"
-      
-    - name: echo current date and time
-      run: echo ${{ steps.date.outputs.date }}
-      
-    - name: setup latest app version
-      id: version
-      if: ${{ github.event.ref == 'refs/heads/main' || github.event.ref == 'refs/heads/develop' }}        
-      run: |
-        if [[ ${{ github.ref_name }} == 'main' ]]; then
-          echo "It is main branch. hence, we will create the release tag"
-          version="1.0.0"
-          echo "::set-output name=version::$version"
-        elif [[ ${{ github.ref_name }} == 'develop' ]]; then
-           echo "It is develop branch. hence, we will create a snapshot tag"
-           version="1.0.0.SNAPSHOT-${{ steps.date.outputs.date }}"
-           echo "::set-output name=version::$version"
-        fi
-        
-    - name: Display calculated version
-      run: echo "Calculated version is ${{ steps.version.outputs.version }}"
+      - name: Display repo name
+        run: echo ${{ steps.split.outputs._1 }}
 
-    - run: echo "${{ github.repository }}:${{ steps.version.outputs.version }}"
+      - uses: actions/checkout@v4
 
-    - name: Push Docker Image to Docker Hub
-      uses: docker/build-push-action@v5
-      with:
-        push: true
-        tags: ${{ github.repository }}:${{ steps.version.outputs.version }}
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Get current date and time format
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y%m%d%H%M%S')"
+
+      - name: echo current date and time
+        run: echo ${{ steps.date.outputs.date }}
+
+      - name: setup latest app version
+        id: version
+        if: ${{ github.event.ref == 'refs/heads/main' || github.event.ref == 'refs/heads/develop' }}
+        run: |
+          if [[ ${{ github.ref_name }} == 'main' ]]; then
+            echo "It is main branch. hence, we will create the release tag"
+            version="1.0.0"
+            echo "::set-output name=version::$version"
+            echo "::set-output name=env::prod"
+          elif [[ ${{ github.ref_name }} == 'develop' ]]; then
+             echo "It is develop branch. hence, we will create a snapshot tag"
+             version="1.0.0.SNAPSHOT-${{ steps.date.outputs.date }}"
+             echo "::set-output name=version::$version"
+             echo "::set-output name=env::dev"
+          fi
+
+      - name: Display calculated version
+        run: echo "Calculated version is ${{ steps.version.outputs.version }}"
+
+      - run: echo "${{ github.repository }}:${{ steps.version.outputs.version }}"
+
+      - name: Push Docker Image to Docker Hub
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: ${{ github.repository }}:${{ steps.version.outputs.version }}
+      - name: call deploy workflow
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.GITHUB_AUTH_TOKEN }}
+          repository: ${{ github.repository }}
+          event-type: deploy
+          client-payload: '{"env": "${{ steps.version.outputs.env }}", "version": "${{ steps.version.outputs.version }}"}'

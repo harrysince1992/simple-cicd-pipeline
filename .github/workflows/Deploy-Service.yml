@@ -1,1 +1,14 @@
+name: simple node webapp deploy pipeline
 
+on:
+  workflow_call:
+
+jobs:
+  Deploy-WebApp:
+    name: Deploy simple node web app
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump client payload
+        run: |
+          echo "Environment: ${{ github.event.client_payload.env }}"
+          echo "Version: ${{ github.event.client_payload.version }}"
