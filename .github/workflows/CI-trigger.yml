@@ -22,10 +22,17 @@ jobs:
     - name: echo current date and time
       run: echo ${{ steps.date.outputs.date }}
     - name: setup latest app version
-      if: ${{ github.event.ref == 'refs/heads/main' || github.event.ref == 'refs/heads/develop' }}
+      id: version
+      if: ${{ github.event.ref == 'refs/heads/main' || github.event.ref == 'refs/heads/develop' }}        
       run: |
         if [[ ${{ github.event.ref }} == 'refs/heads/main' ]]; then
-          echo "It is main branch. hence, we will create release tag"
+          echo "It is main branch. hence, we will create the release tag"
+          version="1.0.0"
+          echo "::set-output name=version::$version"
         elif [[ ${{ github.event.ref }} == 'refs/heads/develop' ]]; then
-           echo "It is main branch. hence, we will create snapshot tag"
+           echo "It is develop branch. hence, we will create a snapshot tag"
+           version="1.0.0.SNAPSHOT-${{ steps.date.outputs.date }}"
+           echo "::set-output name=version::$version"
         fi
+    - name: Display calculated version
+      run: echo "Calculated version is ${{ steps.version.outputs.version }}"
